@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+lib/
+*.pyc
+*.pkl
+.env
+config.py
+neo4j_viz.html 
+neo4j_check.py
+tst_genai.py
+test_gemini.py
+vietnam_travel_dataset.json
+
+
