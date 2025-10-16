@@ -133,7 +133,7 @@ Open the file in your browser to confirm graph connectivity.
 
 ## Visualization Graph
 
-![Graph](https://i.ibb.co/spj854Gm/neo4j-viz-img.png)
+![Graph](https://i.ibb.co/hFGmJmBg/neo4j-viz-img.png)
 
 ### Step 4: Hybrid Chat Assistant (`hybrid_chat.py`)
 
