@@ -49,11 +49,8 @@ For production or distributed use:
 
 ---
 
-#### **Metrics / success criteria**
+![Cache_improvement](https://i.ibb.co/RTnZRq8L/cache-improvement.png)
 
-- **Cache hit rate (%)**
-- **Reduction in embedding API calls**
-- **Improved end-to-end latency** for repeated queries
-- **Cache size and eviction stats** (optional future logging)
+#### Embedding cache reduces repeated upsert/load time by 57%, demonstrating tangible performance improvement.
 
 ---

@@ -13,6 +13,7 @@ neo4j_viz.html
 neo4j_check.py
 tst_genai.py
 test_gemini.py
+bench_upload.py
 vietnam_travel_dataset.json
 
 
