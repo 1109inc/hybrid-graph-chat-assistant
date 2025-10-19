@@ -111,7 +111,11 @@ def fetch_graph_context(node_ids: List[str], neighborhood_depth=1):
 def build_prompt(user_query, pinecone_matches, graph_facts):
     """Build a chat prompt combining vector DB matches and graph facts."""
     system = (
-        "You are a travel itinerary assistant. **Use the names and descriptive text** provided in the context to form a natural-language itinerary. **NEVER** include the 'id', 'node id', or any code in your final response. Focus on giving the user the best 2-3 specific place names or descriptions per day."
+        "You are a travel itinerary assistant. Use the names and descriptive text provided in the context to form a natural-language itinerary. "
+        "Use the provided description and infer the most likely real-world name of the attraction. If the name is already present, use it. Otherwise, guess the most specific, accurate name possible rather than a generic label."
+        "When you infer a name, append the tag ' (inferred)' to that name. "
+        "Do NOT invent facts beyond the given descriptions. If unsure, use a short quoted description instead. "
+        "Never output raw node ids or code-like identifiers in the final response. Keep answers concise and suggest 2–3 concrete place names or itinerary steps."
     )
 
     vec_context = []
@@ -134,7 +138,7 @@ def build_prompt(user_query, pinecone_matches, graph_facts):
             f"User query: {user_query}\n\n"
             "Top semantic matches (from vector DB):\n" + "\n".join(vec_context[:10]) + "\n\n"
             "Graph facts (neighboring relations):\n" + "\n".join(graph_context[:20]) + "\n\n"
-            "Based on the above, answer the user's question. If helpful, suggest 2–3 concrete itinerary steps or tips and mention node ids for references."}
+            "Based on the above, answer the user's question. If helpful, suggest 2–3 concrete itinerary steps or tips."}
     ]
     return prompt
 
