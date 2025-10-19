@@ -133,7 +133,8 @@ Open the file in your browser to confirm graph connectivity.
 
 ## Visualization Graph
 
-![Graph](https://i.ibb.co/hFGmJmBg/neo4j-viz-img.png)
+<img width="1895" height="893" alt="neo4j-viz-img_full_size" src="https://github.com/user-attachments/assets/d812e7e3-f7e8-4c2e-9d3c-d4d6148f4710" />
+
 
 ### Step 4: Hybrid Chat Assistant (`hybrid_chat.py`)
 
