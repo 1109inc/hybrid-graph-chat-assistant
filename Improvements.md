@@ -54,3 +54,29 @@ For production or distributed use:
 #### Embedding cache reduces repeated upsert/load time by 57%, demonstrating tangible performance improvement.
 
 ---
+
+### **Prompt clarity & inferred-name behavior**
+
+Improved the system prompt used by the chat model so the assistant will infer **human-readable place names** from node descriptions when a node’s name field is missing or unhelpful. This fixed the prior behavior where the assistant would output internal node IDs like **Da Lat Attraction 251**, and replaced it with readable names such as **Lang Biang Mountain (inferred)**.
+
+---
+
+#### Why
+
+- The original prompt allowed the model to reuse raw node identifiers (IDs) in answers, which is unreadable to end users.
+
+- Missing name metadata is common in scraped or minimal datasets; having the model infer reasonable names improves user experience without changing source data.
+
+- This is a low-effort, high-impact improvement for demo/testing: no data reprocessing required.
+
+---
+
+### Before improvement
+
+![Before](https://i.ibb.co/9HZknZxd/before-prompt-improv.png)
+
+### After improvement
+
+![After](https://i.ibb.co/svR8pRhF/after-prompt-improv.png)
+
+#### The output after improvement is readable and transparent, as users can see when a place name was inferred from its description, which also helps in testing and debugging.
