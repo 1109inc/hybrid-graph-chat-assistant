@@ -73,10 +73,12 @@ Improved the system prompt used by the chat model so the assistant will infer **
 
 ### Before improvement
 
-![Before](https://i.ibb.co/9HZknZxd/before-prompt-improv.png)
+<img width="1183" height="487" alt="before_prompt_improv" src="https://github.com/user-attachments/assets/d0a16072-70c9-48cb-990e-200988d592d0" />
+
 
 ### After improvement
 
-![After](https://i.ibb.co/svR8pRhF/after-prompt-improv.png)
+<img width="1191" height="452" alt="after_prompt_improv" src="https://github.com/user-attachments/assets/05c7f58f-621a-47db-8537-6562b8e2db5b" />
+
 
 #### The output after improvement is readable and transparent, as users can see when a place name was inferred from its description, which also helps in testing and debugging.
