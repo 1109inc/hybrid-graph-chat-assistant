@@ -1,11 +1,13 @@
 # hybrid_chat.py
 import json
-from typing import List
+from typing import List, Tuple
 from google import genai
 import google.genai.types as genai_types 
 from pinecone import Pinecone, ServerlessSpec
 from neo4j import GraphDatabase
 import config
+import time
+import asyncio
 
 # -----------------------------
 # Config
@@ -70,6 +72,47 @@ def pinecone_query(query_text: str, top_k=TOP_K):
     print(len(res["matches"]))
     return res["matches"]
 
+def _fetch_graph_for_id(driver, nid, neighborhood_depth=1, max_neighbors=10):
+    """Synchronous worker — runs in a thread. Returns list of facts for one id."""
+    facts = []
+    with driver.session() as session:
+        q = (
+            "MATCH (n:Entity {id:$nid})-[r]-(m:Entity) "
+            "RETURN type(r) AS rel, labels(m) AS labels, m.id AS id, "
+            "m.name AS name, m.type AS type, m.description AS description "
+            "LIMIT $limit"
+        )
+        recs = session.run(q, nid=nid, limit=max_neighbors)
+        for r in recs:
+            target_desc = r["description"] or ""
+            target_name = r["name"]
+            if not target_name or len(str(target_name).strip()) < 3:
+                desc_snippet = " ".join(target_desc.split()[:10])
+                target_name = f"\"{desc_snippet}\""
+            facts.append({
+                "source": nid,
+                "rel": r["rel"],
+                "target_id": r["id"],
+                "target_name": target_name,
+                "target_desc": target_desc[:400],
+                "labels": r["labels"]
+            })
+    return facts
+
+async def fetch_graph_context_async(node_ids: List[str], neighborhood_depth=1):
+    """Run per-node Neo4j fetches in parallel threads and return flattened list."""
+    if not node_ids:
+        return []
+    sem = asyncio.Semaphore(min(16, max(4, len(node_ids))))  # tune: min(max_concurrency, nodes)
+    async def worker(nid):
+        async with sem:
+            return await asyncio.to_thread(_fetch_graph_for_id, driver, nid, neighborhood_depth)
+    tasks = [worker(nid) for nid in node_ids]
+    results = await asyncio.gather(*tasks)
+    facts = [f for chunk in results for f in chunk]
+    print("DEBUG (async): Graph facts fetched:", len(facts))
+    return facts
+
 def fetch_graph_context(node_ids: List[str], neighborhood_depth=1):
     """Fetch neighboring nodes from Neo4j."""
     facts = []
@@ -78,7 +121,6 @@ def fetch_graph_context(node_ids: List[str], neighborhood_depth=1):
             q = (
                 "MATCH (n:Entity {id:$nid})-[r]-(m:Entity) "
                 "RETURN type(r) AS rel, labels(m) AS labels, m.id AS id, "
-                # Ensure we retrieve all necessary data
                 "m.name AS name, m.type AS type, m.description AS description "
                 "LIMIT 10"
             )
@@ -142,44 +184,75 @@ def build_prompt(user_query, pinecone_matches, graph_facts):
     ]
     return prompt
 
-def call_chat(prompt_messages):
-    """Call Gemini ChatCompletion."""
+def call_chat(prompt_messages) -> Tuple[str, float]:
+    """Call Gemini ChatCompletion and return (text, elapsed_seconds)."""
     
     # 1. Extract the system instruction and the user message
     system_instruction = prompt_messages[0]["content"]
     user_content = prompt_messages[1]["content"]
 
     # 2. Configure the generation parameters
-    config = genai_types.GenerateContentConfig(
+    cfg = genai_types.GenerateContentConfig(
         system_instruction=system_instruction,
         temperature=0.2
     )
 
-    # 3. Call the Gemini model. Pass only the user content.
+    # 3. Call the Gemini model and time the call
+    t0 = time.perf_counter()
     resp = client.models.generate_content(
         model=CHAT_MODEL,
         contents=[user_content],
-        config=config
+        config=cfg
     )
+    elapsed = time.perf_counter() - t0
     
-    # Return the text part of the response
-    return resp.text
+    # Return the text part of the response and elapsed time
+    return resp.text, elapsed
 
 # -----------------------------
 # Interactive chat
 # -----------------------------
 def interactive_chat():
     print("Hybrid travel assistant. Type 'exit' to quit.")
+    
+    # Warmup: Run a small query to initialize connections
+    print("Warming up connections...")
+    _ = asyncio.run(fetch_graph_context_async(['dummy_id']))
+    print("Ready!\n")
+
     while True:
         query = input("\nEnter your travel question: ").strip()
         if not query or query.lower() in ("exit","quit"):
             break
 
+        total_t0 = time.perf_counter()
+
+        # time Pinecone (includes embedding)
+        t0 = time.perf_counter()
         matches = pinecone_query(query, top_k=TOP_K)
+        pinecone_time = time.perf_counter() - t0
+
         match_ids = [m["id"] for m in matches]
-        graph_facts = fetch_graph_context(match_ids)
+
+        # time graph fetch
+        t0 = time.perf_counter()
+        graph_facts = asyncio.run(fetch_graph_context_async(match_ids))
+        graph_time = time.perf_counter() - t0
+
         prompt = build_prompt(query, matches, graph_facts)
-        answer = call_chat(prompt)
+
+        # call chat and get model generation time
+        answer, model_time = call_chat(prompt)
+
+        total_time = time.perf_counter() - total_t0
+
+        # Print timing summary and answer
+        print("\n=== Timing ===")
+        print(f"Pinecone (embed+query): {pinecone_time:.3f}s")
+        print(f"Graph fetch:            {graph_time:.3f}s")
+        print(f"Model generation:       {model_time:.3f}s")
+        print(f"Total (end-to-end):     {total_time:.3f}s")
+
         print("\n=== Assistant Answer ===\n")
         print(answer)
         print("\n=== End ===\n")

@@ -61,7 +61,7 @@ Improved the system prompt used by the chat model so the assistant will infer **
 
 ---
 
-#### Why
+#### **Why**
 
 - The original prompt allowed the model to reuse raw node identifiers (IDs) in answers, which is unreadable to end users.
 
@@ -71,12 +71,64 @@ Improved the system prompt used by the chat model so the assistant will infer **
 
 ---
 
-### Before improvement
+### **Before improvement**
 
 ![Before](https://i.ibb.co/9HZknZxd/before-prompt-improv.png)
 
-### After improvement
+### **After improvement**
 
 ![After](https://i.ibb.co/svR8pRhF/after-prompt-improv.png)
 
 #### The output after improvement is readable and transparent, as users can see when a place name was inferred from its description, which also helps in testing and debugging.
+
+---
+
+### **Async Neo4j Graph Fetch — Design Overview and Trade-offs**
+
+#### **What it does**
+
+- Parallelizes per-node Neo4j lookups by running the existing per-node Cypher query in worker threads (asyncio.to_thread) and gathering results concurrently with asyncio.gather.
+- Returns the same structured facts used by the prompt builder: source, rel, target_id, target_name, target_desc, labels.
+- Includes a bounded Semaphore to avoid overwhelming the DB and a warmup recommendation to avoid first-run spikes.
+
+---
+
+#### **Design trade-offs (two approaches)**
+
+| Approach                                 |                                                                                                                                                               Pros | Cons                                                                                                                                                                |
+| ---------------------------------------- | -----------------------------------------------------------------------------------------------------------------------------------------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| asyncio.to_thread per-node (current)     | - Minimal code change; reuses existing Neo4j driver and queries. <br>- Easy to test, debug and roll back. <br>- Good latency win for moderate fanout (≈10–30 ids). | - Still multiple DB round-trips (one per id). <br>- Thread/connection overhead increases with large node counts.                                                    |
+| Single-request UNWIND via HTTP (aiohttp) |                                          - Single network round-trip for many ids; best latency for large batches. <br>- Lower overall overhead for hundreds+ ids. | - Requires HTTP transactional endpoint and Basic auth handling. <br>- More JSON parsing and error/response-shape handling. <br>- Larger code & operational changes. |
+
+---
+
+#### **Why we chose the asyncio.to_thread approach**
+
+Based on the trade-off table above, asyncio.to_thread wins for our current needs because it delivers a large portion of the practical latency improvement with minimal engineering risk. It reuses the existing driver and query logic (no new endpoints or auth), is easy to instrument, and is the best fit for the observed workload (≈12–30 node lookups per query). The UNWIND/aiohttp approach is better only when node counts are much larger and the extra implementation complexity and HTTP handling are justified.
+
+---
+
+#### **Scalability path**
+
+- Short term: use asyncio.to_thread with a bounded Semaphore (e.g., min(16, len(ids))) and a one-time warmup to remove cold-start overhead. Measure and report mean/median over multiple runs.
+- Mid term: make embeddings and cache access non-blocking (async wrappers or aiosqlite / to_thread) to create a fully async pipeline.
+- Long term: switch to UNWIND/batch via Neo4j HTTP transactional endpoint (aiohttp) for high-throughput cases (hundreds+ ids), and/or move cache to Redis for distributed scale.
+
+---
+
+#### **Features**
+
+- Time distribution shown: CLI prints a per-query timing breakdown (Pinecone embed+query, graph fetch, model generation, total), enabling analysis of where time is spent and validating async gains.
+- Warmup to ignore startup overhead: the interactive flow performs a light async warmup (one dummy fetch) so first-run connection and pool setup do not skew timing measurements.
+
+---
+
+### **Before async**
+
+![Before](https://i.ibb.co/SD2zYnzY/before-async.png)
+
+### **After async**
+
+![After](https://i.ibb.co/67mB44ZK/after-async.png)
+
+#### Async implementation cut graph fetching time by ~94.3%, highlighting a significant performance boost.
