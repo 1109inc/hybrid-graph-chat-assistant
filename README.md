@@ -189,7 +189,7 @@ See detailed documentation of implemented improvements in [Improvements.md](Impr
 
 - **Embedding Cache**: Added SQLite-based persistent cache, reducing repeated embedding time by ~57%
 - **Prompt Clarity**: Improved name inference from descriptions for better readability
-- **Async Graph Fetch**: Parallelized Neo4j lookups, cutting graph fetch time by ~94%
+- **Async Graph Fetch**: Parallelized Neo4j lookups, cutting graph fetch time by ~88%
 
 ---
 
