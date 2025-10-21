@@ -183,6 +183,16 @@ The assistant will use **Pinecone’s semantic matches** and **Neo4j’s graph r
 
 ---
 
+## 🚀 Performance Improvements
+
+See detailed documentation of implemented improvements in [Improvements.md](Improvements.md):
+
+- **Embedding Cache**: Added SQLite-based persistent cache, reducing repeated embedding time by ~57%
+- **Prompt Clarity**: Improved name inference from descriptions for better readability
+- **Async Graph Fetch**: Parallelized Neo4j lookups, cutting graph fetch time by ~94%
+
+---
+
 ### 📁 Folder structure
 
 ```
