@@ -78,11 +78,13 @@ All items uploaded successfully.
 
 ## Index details
 
-![Index](https://i.ibb.co/1tFmBwp8/index-details.png)
+<img width="1900" height="887" alt="index_details" src="https://github.com/user-attachments/assets/e2b07d3b-f5e3-4102-ae81-e0519b0ef50d" />
+
 
 ## Upsert Batch
 
-![Upsertbatch](https://i.ibb.co/GQg0tW8c/upsert-batch.png)
+<img width="1611" height="805" alt="upsert_batch" src="https://github.com/user-attachments/assets/1f815b58-499a-4504-9f0c-9deba34cbe25" />
+
 
 ### Step 2: Load Data into Neo4j (`load_to_neo4j.py`)
 
