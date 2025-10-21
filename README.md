@@ -199,6 +199,9 @@ See detailed documentation of implemented improvements in [Improvements.md](Impr
 HYBRID_CHAT_TEST/
 │
 ├── README.md
+├── Improvements.md
+├── config.example.py
+├── emb_cahce.py
 ├── requirements.txt
 ├── load_to_neo4j.py
 ├── hybrid_chat.py
