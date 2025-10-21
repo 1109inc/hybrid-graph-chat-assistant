@@ -213,6 +213,13 @@ HYBRID_CHAT_TEST/
 
 ---
 
+### Branches Overview
+
+- **main** → baseline working submission.
+- **improvements** → extended version with caching and other enhancements.
+
+---
+
 ## 🧭 Example Flow Summary
 
 1. Setup Python 3.11 environment & install dependencies

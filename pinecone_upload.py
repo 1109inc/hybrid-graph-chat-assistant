@@ -4,6 +4,7 @@ from tqdm import tqdm
 from google import genai
 from pinecone import Pinecone, ServerlessSpec
 import config
+from emb_cache import batch_get_embeddings, put_embedding_in_cache
 
 # -----------------------------
 # Config (Updated for Gemini)
@@ -97,14 +98,44 @@ def main():
 
     print(f"Preparing to upsert {len(items)} items to Pinecone using {EMBED_MODEL}...")
 
+    total_hits = 0
+    total_misses = 0
+
     for batch in tqdm(list(chunked(items, BATCH_SIZE)), desc="Uploading batches"):
         ids = [item[0] for item in batch]
         texts = [item[1] for item in batch]
         metas = [item[2] for item in batch]
 
-        # Call the corrected helper function
-        embeddings = get_embeddings(texts, model=EMBED_MODEL)
+        # ---------- BATCH-AWARE CACHE USAGE ----------
+        # 1) Lookup embeddings in local cache for this batch
+        found_map, missing_indices = batch_get_embeddings(texts, model=EMBED_MODEL)
 
+        # Print cache hits/misses for this batch
+        hits = len(found_map)
+        misses = len(missing_indices)
+        total_hits += hits
+        total_misses += misses
+        tqdm.write(f"Cache: {hits} hits, {misses} misses for this batch ({hits+misses}/{len(texts)})")
+
+        # Prepare embeddings list in original order
+        embeddings = [None] * len(texts)
+        for idx, emb in found_map.items():
+            embeddings[idx] = emb
+
+        # 2) Compute embeddings only for missing items, then cache them
+        if missing_indices:
+            texts_to_compute = [texts[i] for i in missing_indices]
+            computed_embeddings = get_embeddings(texts_to_compute, model=EMBED_MODEL)
+            for i, idx in enumerate(missing_indices):
+                emb = computed_embeddings[i]
+                embeddings[idx] = emb
+                # Best-effort cache write; ignore cache errors
+                try:
+                    put_embedding_in_cache(texts[idx], EMBED_MODEL, emb)
+                except Exception:
+                    pass
+
+        # 3) All embeddings should now be present; build vectors and upsert
         vectors = [
             {"id": _id, "values": emb, "metadata": meta}
             for _id, emb, meta in zip(ids, embeddings, metas)
@@ -113,7 +144,7 @@ def main():
         index.upsert(vectors)
         time.sleep(0.2)
 
-    print("All items uploaded successfully.")
+    print(f"All items uploaded successfully. Total cache hits: {total_hits}, total misses: {total_misses}")
 
 # -----------------------------
 if __name__ == "__main__":
