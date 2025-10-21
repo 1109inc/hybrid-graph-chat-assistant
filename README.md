@@ -12,6 +12,16 @@ The assistant can answer complex travel-related queries using both semantic and 
 
 ---
 
+## 🏛️ Architecture
+
+The following images explains the architecture of the project
+
+### Data ingestion
+
+### App Flow
+
+---
+
 ## ⚙️ Environment Setup
 
 ### 1. Python Environment
@@ -80,11 +90,9 @@ All items uploaded successfully.
 
 <img width="1900" height="887" alt="index_details" src="https://github.com/user-attachments/assets/e2b07d3b-f5e3-4102-ae81-e0519b0ef50d" />
 
-
 ## Upsert Batch
 
 <img width="1611" height="805" alt="upsert_batch" src="https://github.com/user-attachments/assets/1f815b58-499a-4504-9f0c-9deba34cbe25" />
-
 
 ### Step 2: Load Data into Neo4j (`load_to_neo4j.py`)
 
