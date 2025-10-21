@@ -25,19 +25,7 @@ py -3.11 -m venv .venv
 
 ### 2. Install Dependencies
 
-Create a `requirements.txt` with:
-
-```
-neo4j==5.9.0
-#openai==1.0.0
-pyvis==0.3.1
-networkx==3.1
-tqdm
-python-dotenv
-google-genai
-```
-
-Then install:
+Run:
 
 ```bash
 pip install -r requirements.txt
@@ -135,7 +123,6 @@ Open the file in your browser to confirm graph connectivity.
 
 <img width="1895" height="893" alt="neo4j-viz-img_full_size" src="https://github.com/user-attachments/assets/d812e7e3-f7e8-4c2e-9d3c-d4d6148f4710" />
 
-
 ### Step 4: Hybrid Chat Assistant (`hybrid_chat.py`)
 
 This integrates:
@@ -183,7 +170,7 @@ The assistant will use **Pinecone’s semantic matches** and **Neo4j’s graph r
 
 ---
 
-## 🧠 Improvements Implemented
+## 🧠 Changes Implemented
 
 | Component       | Change                             | Reason                                    |
 | --------------- | ---------------------------------- | ----------------------------------------- |
@@ -210,13 +197,6 @@ HYBRID_CHAT_TEST/
 ├── .gitignore
 
 ```
-
----
-
-### Branches Overview
-
-- **main** → baseline working submission.
-- **improvements** → extended version with caching and other enhancements.
 
 ---
 
