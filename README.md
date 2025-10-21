@@ -166,7 +166,7 @@ The assistant will use **Pinecone’s semantic matches** and **Neo4j’s graph r
 
 ## Interactive CLI
 
-![CLI](https://i.ibb.co/RG4yr1gL/hybrid-chat-CLI.png)
+<img width="1312" height="592" alt="after_async_better" src="https://github.com/user-attachments/assets/6787eba9-036b-4a7c-9e7f-a09ecd0b7c38" />
 
 ---
 
