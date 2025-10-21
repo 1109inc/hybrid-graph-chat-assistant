@@ -18,7 +18,11 @@ The following images explains the architecture of the project
 
 ### Data ingestion
 
+<img width="1715" height="674" alt="hybrid_chat_assistant_data_ingestion" src="https://github.com/user-attachments/assets/822b5c46-50e7-40eb-92a6-2db9ead650ba" />
+
 ### App Flow
+
+<img width="2568" height="1129" alt="hybrid_chat_assistant_app_flow" src="https://github.com/user-attachments/assets/607305bf-388d-44e2-b382-9ad49186bda1" />
 
 ---
 
