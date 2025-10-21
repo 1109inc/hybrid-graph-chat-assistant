@@ -131,6 +131,7 @@ Based on the trade-off table above, asyncio.to_thread wins for our current needs
 
 ### **After async**
 
-![After](https://i.ibb.co/67mB44ZK/after-async.png)
+<img width="1312" height="592" alt="after_async_better" src="https://github.com/user-attachments/assets/6787eba9-036b-4a7c-9e7f-a09ecd0b7c38" />
 
-#### Async implementation cut graph fetching time by ~94.3%, highlighting a significant performance boost.
+
+#### Async implementation cut graph fetching time by ~88.4%, highlighting a significant performance boost.
