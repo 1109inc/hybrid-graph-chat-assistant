@@ -26,6 +26,17 @@ The following images explains the architecture of the project
 
 ---
 
+## 🚀 Getting Started
+
+Follow these steps to get your Hybrid Chat Travel Assistant up and running:
+
+1.  **Clone the Repository**: First, get a copy of the project to your local machine.
+
+    ```bash
+    git clone https://github.com/1109inc/hybrid-graph-chat-assistant # Replace with your actual repo URL
+    cd hybrid-graph-chat-assistant # Navigate into the cloned directory
+    ```
+
 ## ⚙️ Environment Setup
 
 ### 1. Python Environment
